@@ -20,6 +20,8 @@ I will need to read up on how to do this since working with databases
 in this way will be new to me.
 How many connections do I want to be able to support?
 I have a lot of questions to ask myself and there is a lot to implement here.
+GO BACK TO THE VIDEO PGX Top to Bottom
+There is more to know from this video, your current method of collecting row data is wrong.
 
 
 */
@@ -65,22 +67,16 @@ func main() {
 
 	//fmt.Println(queryResult.String())
 
-	var numbers []int32
-
 	rows, err := conn.Query(ctx, queryTemplate)
-	for rows.Next() {
-		var gamesWon int32
-		err = rows.Scan(&gamesWon)
-		if err != nil {
-			log.Fatal(err)
-		}
-		numbers = append(numbers, gamesWon)
-	}
+	numbers, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (int32, error) {
+		var n int32
+		err := row.Scan(&n)
+		return n, err
+	})
 
-	if rows.Err() != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(numbers)
-
 }
