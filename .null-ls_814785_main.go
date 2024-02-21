@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"regexp"
@@ -17,21 +16,18 @@ import (
 
 /*
 Make PostgresPlayerStore
-I am thinking we will need to store a connection? Done for now, look at more example of how to manage database connections in code similar to this
-How many connections do I want to be able to support? for now max out at 10, doesn't really matter atm.
-I have a lot of questions to ask myself and there is a lot to implement here. 1. once db calls are done make sure the website handles concurrent users
+I am thinking we will need to store a connection?
+I will need to read up on how to do this since working with databases
+in this way will be new to me.
+How many connections do I want to be able to support?
+I have a lot of questions to ask myself and there is a lot to implement here.
+GO BACK TO THE VIDEO PGX Top to Bottom
+There is more to know from this video, your current method of collecting row data is wrong.
+
 
 */
 
 var db *pgxpool.Pool
-
-func startDB() (*pgxpool.Pool, error) {
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("WEB_APP_DB"))
-	if err != nil {
-		return nil, err
-	}
-	return dbpool, nil
-}
 
 type InMemoryPlayerStore struct {
 	store map[string]int
@@ -60,12 +56,6 @@ func main() {
 	//	myServer := &s.PlayerServer{Store: NewInMemoryPlayerStore()}
 	//	log.Fatal(http.ListenAndServe(":5000", myServer))
 
-	db, err := startDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	rdr := bufio.NewReader(os.Stdin)
 	userInput, _ := rdr.ReadString('\n')
 	userInput = strings.TrimSuffix(userInput, "\n")
@@ -75,7 +65,19 @@ func main() {
 
 	ctx := context.Background()
 
-	rows, err := db.Query(ctx, queryString)
+	conn, err := pgx.Connect(ctx, os.Getenv("WEB_APP_DB"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	//queryResult, err := conn.Exec(ctx, `INSERT INTO scores (name, gamesWon)
+	//VALUES ('Jerry', 5);`)
+
+	//fmt.Println(queryResult.String())
+
+	rows, err := conn.Query(ctx, queryString)
 	numbers, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (int32, error) {
 		var n int32
 		err := row.Scan(&n)
