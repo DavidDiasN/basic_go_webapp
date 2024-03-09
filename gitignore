@@ -1,1 +1,5 @@
 cmd/
+.null-Is*.go
+.null-Is*.go
+null-ls*.*
+main
