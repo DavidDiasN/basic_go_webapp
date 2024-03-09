@@ -3,3 +3,4 @@
 null-ls*.*
 main
 go.mod
+go.sum
