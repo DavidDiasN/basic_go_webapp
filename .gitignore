@@ -2,3 +2,4 @@
 .null-Is*.go
 null-ls*.*
 main
+go.mod
