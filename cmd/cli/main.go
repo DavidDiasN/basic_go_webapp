@@ -14,6 +14,7 @@ func main() {
 	fmt.Println("Type {Name} wins to record a win")
 
 	db, closeDB, err := poker.FileSystemPlayerStoreFromFile(dbFileName)
+	defer closeDB()
 
 	if err != nil {
 		log.Fatalf("Problem opening %s %v", dbFileName, err)

@@ -4,4 +4,4 @@ null-ls*.*
 main
 go.mod
 go.sum
-
+game.db.json
