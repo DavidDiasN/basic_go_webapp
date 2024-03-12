@@ -1,3 +1,0 @@
-package poker
-
-import "testing"
