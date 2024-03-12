@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/DavidDiasN/learn-with-tests-poker"
 	"log"
 	"os"
-
-	"github.com/DavidDiasN/learn-with-tests-poker"
 )
 
 const dbFileName = "game.db.json"
@@ -26,6 +25,6 @@ func main() {
 		log.Fatalf("Problem creating file system player store, %v ", err)
 	}
 
-	game := poker.CLI{store, os.Stdin}
+	game := poker.NewCLI(store, os.Stdin)
 	game.PlayPoker()
 }
