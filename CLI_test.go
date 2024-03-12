@@ -1,6 +1,7 @@
 package poker_test
 
 import (
+	"github.com/DavidDiasN/learn-with-tests-poker"
 	"strings"
 	"testing"
 )
