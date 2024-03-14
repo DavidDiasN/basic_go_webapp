@@ -83,7 +83,7 @@ func (f *FileSystemPlayerStore) GetPlayerScore(name string) (wins int) {
 		if player.Name == name {
 			wins = player.Wins
 			break
-		}
+		}func
 	}
 
 	return
