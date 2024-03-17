@@ -2,6 +2,7 @@ package poker_test
 
 import (
 	"bytes"
+	"io"
 	"poker"
 	"strings"
 	"testing"
@@ -14,7 +15,7 @@ type GameSpy struct {
 	StartCalled  bool
 }
 
-func (g *GameSpy) Start(numberOfPlayers int) {
+func (g *GameSpy) Start(numberOfPlayers int, to io.Writer) {
 	g.StartedWith = numberOfPlayers
 	g.StartCalled = true
 }
@@ -28,7 +29,7 @@ func TestGame_Start(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
 		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
 
-		game.Start(5)
+		game.Start(5, dummyStdOut)
 
 		cases := []ScheduledAlert{
 			{At: 0 * time.Minute, Amount: 100},
@@ -50,7 +51,7 @@ func TestGame_Start(t *testing.T) {
 	t.Run("Schedules alerts on game start for 7 players", func(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
 		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
-		game.Start(7)
+		game.Start(7, dummyStdOut)
 
 		cases := []ScheduledAlert{
 			{At: 0 * time.Minute, Amount: 100},
