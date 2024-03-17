@@ -36,7 +36,7 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 
 func (p *PlayerServer) gameHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	tmpl, err := template.ParseFiles("game.html")
+	tmpl, err := template.ParseFiles("./game.html")
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Problem loading template %s", err.Error()), http.StatusInternalServerError)
