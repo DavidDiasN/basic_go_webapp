@@ -35,7 +35,6 @@ func NewPlayerServer(store PlayerStore) *PlayerServer {
 }
 
 func (p *PlayerServer) gameHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 	tmpl, err := template.ParseFiles("./poker/game.html")
 
 	if err != nil {
