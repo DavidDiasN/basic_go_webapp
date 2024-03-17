@@ -23,7 +23,7 @@ func TestGetPlayers(t *testing.T) {
 		response := httptest.NewRecorder()
 		myServer.ServeHTTP(response, request)
 		AssertResponseBody(t, response.Body.String(), "20")
-		AssertResponseHeader(t, response.Code, http.StatusOK)
+		AssertResponseHeader(t, response, http.StatusOK)
 
 	})
 
@@ -33,7 +33,7 @@ func TestGetPlayers(t *testing.T) {
 
 		myServer.ServeHTTP(response, request)
 		AssertResponseBody(t, response.Body.String(), "10")
-		AssertResponseHeader(t, response.Code, http.StatusOK)
+		AssertResponseHeader(t, response, http.StatusOK)
 
 	})
 
@@ -43,7 +43,20 @@ func TestGetPlayers(t *testing.T) {
 
 		myServer.ServeHTTP(response, request)
 
-		AssertResponseHeader(t, response.Code, http.StatusNotFound)
+		AssertResponseHeader(t, response, http.StatusNotFound)
+	})
+}
+
+func TestGame(t *testing.T) {
+	t.Run("GET /game returns 200", func(t *testing.T) {
+		server := NewPlayerServer(&StubPlayerStore{})
+
+		request, _ := http.NewRequest(http.MethodGet, "/game", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		AssertResponseHeader(t, response, http.StatusOK)
 	})
 }
 
@@ -64,8 +77,8 @@ func TestStoreWins(t *testing.T) {
 
 		myServer.ServeHTTP(response, request)
 
-		AssertResponseHeader(t, response.Code, http.StatusAccepted)
-    AssertPlayerWin(t, &store, player)
+		AssertResponseHeader(t, response, http.StatusAccepted)
+		AssertPlayerWin(t, &store, player)
 	})
 }
 
@@ -86,7 +99,7 @@ func TestLeague(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		got := GetLeagueFromResponse(t, response.Body)
-		AssertResponseHeader(t, response.Code, http.StatusOK)
+		AssertResponseHeader(t, response, http.StatusOK)
 		AssertLeague(t, got, wantedLeague)
 		AssertContentType(t, response, JsonContentType)
 
