@@ -13,22 +13,28 @@ type GameSpy struct {
 	StartedWith  int
 	FinishedWith string
 	StartCalled  bool
+	BlindAlert   []byte
 }
 
-func (g *GameSpy) Start(numberOfPlayers int, to io.Writer) {
+func (g *GameSpy) Start(numberOfPlayers int, out io.Writer) {
 	g.StartedWith = numberOfPlayers
 	g.StartCalled = true
+	out.Write(g.BlindAlert)
 }
 
 func (g *GameSpy) Finish(winner string) {
 	g.FinishedWith = winner
 }
 
+var tenMS = 10 * time.Millisecond
+
 func TestGame_Start(t *testing.T) {
 
-	t.Run("start a game with 3 players and declare Ruth the winner", func(t *testing.T) {
-		game := &GameSpy{}
+	t.Run("start a game with 3 players, send some blind alerts down WS and declare Ruth the winner", func(t *testing.T) {
+		wantedBlindAlert := "Blind is 100"
 		winner := "Ruth"
+
+		game := &GameSpy{BlindAlert: []byte(wantedBlindAlert)}
 		server := httptest.NewServer(MustMakePlayerServer(t, dummyPlayerStore, game))
 		ws := MustDialWS(t, "ws"+strings.TrimPrefix(server.URL, "http")+"/ws")
 
@@ -38,9 +44,11 @@ func TestGame_Start(t *testing.T) {
 		WriteWSMessage(t, ws, "3")
 		WriteWSMessage(t, ws, winner)
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(tenMS)
+
 		assertGameStartedWith(t, game, 3)
 		assertFinishCalledWith(t, game, winner)
+		within(t, tenMS, func() { assertWebsocketGotMsg(t, ws, wantedBlindAlert) })
 	})
 
 	t.Run("Schedules alerts on game start for 5 players", func(t *testing.T) {
@@ -116,4 +124,26 @@ func assertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...st
 	if got != want {
 		t.Errorf("got %q sent to stdout but expected %+v", got, messages)
 	}
+}
+
+func assertFinishCalledWith(t testing.TB, game *GameSpy, winner string) {
+	t.Helper()
+
+	passed := retryUntil(500*time.Millisecond, func() bool {
+		return game.FinishedWith == winner
+	})
+
+	if !passed {
+		t.Errorf("expected finish called with %q but got %q", winner, game.FinishedWith)
+	}
+}
+
+func retryUntil(d time.Duration, f func() bool) bool {
+	deadline := time.Now().Add(d)
+	for time.Now().Before(deadline) {
+		if f() {
+			return true
+		}
+	}
+	return false
 }

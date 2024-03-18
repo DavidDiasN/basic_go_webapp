@@ -10,7 +10,7 @@ import (
 )
 
 var (
-  dummyGame = &GameSpy{}
+	dummyGame         = &GameSpy{}
 	dummyBlindAlerter = &SpyBlindAlerter{}
 	dummyPlayerStore  = &StubPlayerStore{}
 	dummyStdIn        = &bytes.Buffer{}
@@ -102,15 +102,6 @@ func assertGameStartedWith(t *testing.T, game *GameSpy, want int) {
 	got := game.StartedWith
 	if got != want {
 		t.Errorf("got %d, want %d", got, want)
-	}
-}
-
-func assertFinishCalledWith(t *testing.T, game *GameSpy, want string) {
-	t.Helper()
-
-	got := game.FinishedWith
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
 	}
 }
 

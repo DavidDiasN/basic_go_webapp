@@ -2,6 +2,8 @@ github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240317062043-527776a3e0e5 
 github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240317062043-527776a3e0e5/go.mod h1:nNA2FZDotMi2uIBLp8Kz1/msc4Ac6+P5rK1SZ1lz8Ow=
 github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240317200358-139a9daf25a3 h1:bzMm+PxoYJ+k6kymbZuVZjNG8V8QhIzLF7F3AOispo4=
 github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240317200358-139a9daf25a3/go.mod h1:nNA2FZDotMi2uIBLp8Kz1/msc4Ac6+P5rK1SZ1lz8Ow=
+github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240318143725-ce2cc0a852cc h1:/Orj9UAFG4UoW9UDbHYORdDvYhx6kVDCrJp4V8ykGas=
+github.com/DavidDiasN/learn-with-tests-poker v0.0.0-20240318143725-ce2cc0a852cc/go.mod h1:nNA2FZDotMi2uIBLp8Kz1/msc4Ac6+P5rK1SZ1lz8Ow=
 github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
 github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
 golang.org/x/net v0.17.0 h1:pVaXccu2ozPjCXewfr1S7xza/zcXTity9cCdXQYSjIM=

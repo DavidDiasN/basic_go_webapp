@@ -1,7 +1,6 @@
 package poker
 
 import (
-  "github.com/gorilla/websocket"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +9,9 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type StubPlayerStore struct {
@@ -21,7 +23,7 @@ type StubPlayerStore struct {
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
 	score := s.scores[name]
 	return score
-} 
+}
 
 func (s *StubPlayerStore) RecordWin(name string) {
 	s.winCalls = append(s.winCalls, name)
@@ -151,5 +153,30 @@ func MustMakePlayerServer(t *testing.T, store PlayerStore, game Game) *PlayerSer
 	server, err := NewPlayerServer(store, game)
 	if err != nil {
 		t.Fatal("problem creating player server", err)
-  }
-  return server }
+	}
+	return server
+}
+
+func within(t testing.TB, d time.Duration, assert func()) {
+	t.Helper()
+
+	done := make(chan struct{}, 1)
+
+	go func() {
+		assert()
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-time.After(d):
+		t.Error("timed out")
+	case <-done:
+	}
+}
+
+func assertWebsocketGotMsg(t *testing.T, ws *websocket.Conn, want string) {
+	_, msg, _ := ws.ReadMessage()
+	if string(msg) != want {
+		t.Errorf(`got "%s", want "%s"`, string(msg), want)
+	}
+}
