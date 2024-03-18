@@ -15,7 +15,7 @@ func TestRecordingWinsAndRetrievingThem(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	server, err := NewPlayerServer(store)
+	server, err := NewPlayerServer(store, dummyGame)
   if err != nil {
     t.Errorf("Problem creating server %v", err)
   }

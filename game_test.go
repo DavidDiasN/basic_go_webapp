@@ -1,9 +1,9 @@
-package poker_test
+package poker
 
 import (
 	"bytes"
 	"io"
-	"poker"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -25,9 +25,27 @@ func (g *GameSpy) Finish(winner string) {
 }
 
 func TestGame_Start(t *testing.T) {
+
+	t.Run("start a game with 3 players and declare Ruth the winner", func(t *testing.T) {
+		game := &GameSpy{}
+		winner := "Ruth"
+		server := httptest.NewServer(MustMakePlayerServer(t, dummyPlayerStore, game))
+		ws := MustDialWS(t, "ws"+strings.TrimPrefix(server.URL, "http")+"/ws")
+
+		defer server.Close()
+		defer ws.Close()
+
+		WriteWSMessage(t, ws, "3")
+		WriteWSMessage(t, ws, winner)
+
+		time.Sleep(10 * time.Millisecond)
+		assertGameStartedWith(t, game, 3)
+		assertFinishCalledWith(t, game, winner)
+	})
+
 	t.Run("Schedules alerts on game start for 5 players", func(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
-		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
+		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
 
 		game.Start(5, dummyStdOut)
 
@@ -50,7 +68,7 @@ func TestGame_Start(t *testing.T) {
 
 	t.Run("Schedules alerts on game start for 7 players", func(t *testing.T) {
 		blindAlerter := &SpyBlindAlerter{}
-		game := poker.NewTexasHoldem(blindAlerter, dummyPlayerStore)
+		game := NewTexasHoldem(blindAlerter, dummyPlayerStore)
 		game.Start(7, dummyStdOut)
 
 		cases := []ScheduledAlert{
@@ -68,14 +86,14 @@ func TestGame_Start(t *testing.T) {
 		in := strings.NewReader("Pies\n")
 		game := &GameSpy{}
 
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
 		if game.StartCalled {
 			t.Errorf("game should not have started")
 		}
 
-		wantPrompt := poker.PlayerPrompt + poker.BadPlayerInputErrMsg
+		wantPrompt := PlayerPrompt + BadPlayerInputErrMsg
 
 		assertMessagesSentToUser(t, stdout, wantPrompt)
 	})
@@ -83,12 +101,12 @@ func TestGame_Start(t *testing.T) {
 }
 
 func TestGame_Finish(t *testing.T) {
-	store := &poker.StubPlayerStore{}
-	game := poker.NewTexasHoldem(dummyBlindAlerter, store)
+	store := &StubPlayerStore{}
+	game := NewTexasHoldem(dummyBlindAlerter, store)
 	winner := "Ruth"
 
 	game.Finish(winner)
-	poker.AssertPlayerWin(t, store, winner)
+	AssertPlayerWin(t, store, winner)
 }
 
 func assertMessagesSentToUser(t testing.TB, stdout *bytes.Buffer, messages ...string) {

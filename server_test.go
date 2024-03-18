@@ -1,12 +1,9 @@
 package poker
 
 import (
-	"github.com/gorilla/websocket"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
-	"time"
 )
 
 func TestGetPlayers(t *testing.T) {
@@ -18,7 +15,7 @@ func TestGetPlayers(t *testing.T) {
 		winCalls: nil,
 	}
 
-	server, err := NewPlayerServer(&store)
+	server, err := NewPlayerServer(&store, dummyGame)
 	if err != nil {
 		t.Errorf("Problem creating server %v", err)
 	}
@@ -55,7 +52,7 @@ func TestGetPlayers(t *testing.T) {
 
 func TestGame(t *testing.T) {
 	t.Run("GET /game returns 200", func(t *testing.T) {
-		server, err := NewPlayerServer(&StubPlayerStore{})
+		server, err := NewPlayerServer(&StubPlayerStore{}, dummyGame)
 		if err != nil {
 			t.Errorf("Problem creating server %v", err)
 		}
@@ -67,33 +64,6 @@ func TestGame(t *testing.T) {
 		AssertResponseHeader(t, response, http.StatusOK)
 	})
 
-	t.Run("When we get a message over a websocket it is a winner of a game", func(t *testing.T) {
-		store := &StubPlayerStore{}
-		winner := "Ruth"
-		passServer, err := NewPlayerServer(store)
-
-		if err != nil {
-			t.Errorf("Problem creating server %v", err)
-		}
-
-		server := httptest.NewServer(passServer)
-
-		defer server.Close()
-
-		wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
-
-		ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-		if err != nil {
-			t.Fatalf("Could not open a ws connection on %s %v", wsURL, err)
-		}
-		defer ws.Close()
-
-		if err := ws.WriteMessage(websocket.TextMessage, []byte(winner)); err != nil {
-			t.Fatalf("Could not send message over ws connection %v", err)
-		}
-		time.Sleep(1 * time.Millisecond)
-		AssertPlayerWin(t, store, winner)
-	})
 }
 
 func TestStoreWins(t *testing.T) {
@@ -103,7 +73,7 @@ func TestStoreWins(t *testing.T) {
 		league:   nil,
 	}
 
-	server, err := NewPlayerServer(&store)
+	server, err := NewPlayerServer(&store, dummyGame)
 	if err != nil {
 		t.Errorf("Problem creatin server %v", err)
 	}
@@ -130,7 +100,7 @@ func TestLeague(t *testing.T) {
 		}
 
 		store := StubPlayerStore{nil, nil, wantedLeague}
-		server, err := NewPlayerServer(&store)
+		server, err := NewPlayerServer(&store, dummyGame)
 		if err != nil {
 			t.Errorf("Problem creating server %v", err)
 		}

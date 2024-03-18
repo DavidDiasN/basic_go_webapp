@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -29,9 +31,10 @@ type PlayerServer struct {
 	Store PlayerStore
 	http.Handler
 	template *template.Template
+	game     Game
 }
 
-func NewPlayerServer(store PlayerStore) (*PlayerServer, error) {
+func NewPlayerServer(store PlayerStore, game Game) (*PlayerServer, error) {
 	p := new(PlayerServer)
 
 	tmpl, err := template.ParseFiles(htmlTemplatePath)
@@ -39,7 +42,7 @@ func NewPlayerServer(store PlayerStore) (*PlayerServer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Problem opening %s %v", htmlTemplatePath, err)
 	}
-
+	p.game = game
 	p.template = tmpl
 	p.Store = store
 
@@ -76,8 +79,13 @@ func (p *PlayerServer) playerHandler(w http.ResponseWriter, r *http.Request) {
 
 func (p *PlayerServer) webSocket(w http.ResponseWriter, r *http.Request) {
 	conn, _ := wsUpgrader.Upgrade(w, r, nil)
-	_, winnerMsg, _ := conn.ReadMessage()
-	p.Store.RecordWin(string(winnerMsg))
+
+	_, numberOfPlayersMsg, _ := conn.ReadMessage()
+	numberOfPlayers, _ := strconv.Atoi(string(numberOfPlayersMsg))
+	p.game.Start(numberOfPlayers, io.Discard) //todo: Don't discard the blinds messages
+
+	_, winner, _ := conn.ReadMessage()
+	p.game.Finish(string(winner))
 }
 
 func (p *PlayerServer) showScore(w http.ResponseWriter, player string) {

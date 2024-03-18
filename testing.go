@@ -21,7 +21,7 @@ type StubPlayerStore struct {
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
 	score := s.scores[name]
 	return score
-}
+} 
 
 func (s *StubPlayerStore) RecordWin(name string) {
 	s.winCalls = append(s.winCalls, name)
@@ -130,7 +130,7 @@ func AssertNoError(t testing.TB, err error) {
 	}
 }
 
-func mustDialWS(t *testing.T, url string) *websocket.Conn {
+func MustDialWS(t *testing.T, url string) *websocket.Conn {
 	ws, _, err := websocket.DefaultDialer.Dial(url, nil)
 
 	if err != nil {
@@ -140,9 +140,16 @@ func mustDialWS(t *testing.T, url string) *websocket.Conn {
 	return ws
 }
 
-func writeWSMessage(t testing.TB, conn *websocket.Conn, message string) {
+func WriteWSMessage(t testing.TB, conn *websocket.Conn, message string) {
 	t.Helper()
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
 		t.Fatalf("could not send message over ws connection %v", err)
 	}
 }
+
+func MustMakePlayerServer(t *testing.T, store PlayerStore, game Game) *PlayerServer {
+	server, err := NewPlayerServer(store, game)
+	if err != nil {
+		t.Fatal("problem creating player server", err)
+  }
+  return server }

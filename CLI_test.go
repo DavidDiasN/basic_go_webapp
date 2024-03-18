@@ -1,18 +1,18 @@
-package poker_test
+package poker
 
 import (
 	"bytes"
 	"fmt"
 	"io"
-	"poker"
 	"strings"
 	"testing"
 	"time"
 )
 
 var (
+  dummyGame = &GameSpy{}
 	dummyBlindAlerter = &SpyBlindAlerter{}
-	dummyPlayerStore  = &poker.StubPlayerStore{}
+	dummyPlayerStore  = &StubPlayerStore{}
 	dummyStdIn        = &bytes.Buffer{}
 	dummyStdOut       = &bytes.Buffer{}
 )
@@ -40,11 +40,11 @@ func TestCLI(t *testing.T) {
 		stdout := &bytes.Buffer{}
 
 		in := userSends("3", "Chris wins")
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 
 		cli.PlayPoker()
 
-		assertMessagesSentToUser(t, stdout, poker.PlayerPrompt)
+		assertMessagesSentToUser(t, stdout, PlayerPrompt)
 		assertGameStartedWith(t, game, 3)
 		assertFinishCalledWith(t, game, "Chris")
 	})
@@ -53,7 +53,7 @@ func TestCLI(t *testing.T) {
 		game := &GameSpy{}
 
 		in := userSends("8", "Cleo wins")
-		cli := poker.NewCLI(in, dummyStdOut, game)
+		cli := NewCLI(in, dummyStdOut, game)
 
 		cli.PlayPoker()
 
@@ -67,11 +67,11 @@ func TestCLI(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := userSends("pies")
 
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 		cli.PlayPoker()
 
 		assertGameNotStarted(t, game)
-		assertMessagesSentToUser(t, stdout, poker.PlayerPrompt, poker.BadPlayerInputErrMsg)
+		assertMessagesSentToUser(t, stdout, PlayerPrompt, BadPlayerInputErrMsg)
 	})
 
 	t.Run("It prints error when given the wrong winner string", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestCLI(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		in := userSends("9", "Lloyd is a killer")
 
-		cli := poker.NewCLI(in, stdout, game)
+		cli := NewCLI(in, stdout, game)
 		err := cli.PlayPoker()
 		if err == nil {
 			t.Error("Expected to run into an error")
